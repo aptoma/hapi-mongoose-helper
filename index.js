@@ -121,16 +121,51 @@ NotFoundException.prototype.constructor = NotFoundException;
 
 function connect(mongoose, server, options) {
 	Hoek.assert(typeof options.uri === 'string', 'Database service requires option uri.');
+	let dieTimeoutId;
 
 	// fix for running tests when connection isnt closed when watch and reruns tests.
 	if (!mongoose.connection.db) {
 		server.log(['mongoose', 'info'], 'Connecting to database..');
-		mongoose.connect(options.uri, options.options || {});
-		mongoose.connection.on('disconnecting', () => server.log(['mongoose', 'info'], 'Disconnecting from database.'));
-		mongoose.connection.on('close', () => server.log(['mongoose', 'info'], 'Disconnected from database.'));
+
+		mongoose.connection.on('connected', () => {
+			clearTimeout(dieTimeoutId);
+			server.log(['mongoose', 'info', 'connected'], 'Connected to database.');
+		});
+
+		mongoose.connection.on('close', () => {
+			server.log(['mongoose', 'info'], 'Disconnected from database.');
+			dieTimeoutId = dieIfNotConnected(options.dieConnectTimeout || 10000);
+		});
+
 		mongoose.connection.on('error', (err) => server.log(['mongoose', 'error'], err));
-	} else {
-		server.log(['mongoose', 'info'], 'Connection already open..');
+
+		const events = ['disconnecting', 'connecting', 'open', 'reconnected'];
+		events.forEach((event) => {
+			mongoose.connection.on(event, () => server.log(['mongoose', 'info', event], `Mongoose connection event: ${event}`));
+		});
+
+		return new Promise((resolve, reject) => {
+			mongoose
+				.connect(options.uri, options.options || {}, (err) => {
+					if (err) {
+						server.log(['mongoose', 'error'], err);
+						return reject(err);
+					}
+
+					resolve();
+				});
+		});
+	}
+
+	server.log(['mongoose', 'info'], 'Connection already open..');
+	return Promise.resolve();
+
+	function die() {
+		throw new Error('Unable to establish connection with database');
+	}
+
+	function dieIfNotConnected(timeout) {
+		return setTimeout(() => die(), timeout);
 	}
 }
 

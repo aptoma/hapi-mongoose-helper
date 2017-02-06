@@ -44,9 +44,11 @@
     "@aptoma/eslint-config": "^4.0.0",
     "chai": "3.5.0",
     "eslint": "^3.6.1",
+    "hapi": "^16.1.0",
     "istanbul": "^0.4.2",
     "mocha": "^3.1.0",
     "mocha-only-detector": "^0.1.0",
+    "mongoose": "^4.8.1",
     "release-it": "^2.3.1"
   }
 }

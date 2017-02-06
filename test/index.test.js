@@ -1,10 +1,59 @@
 'use strict';
+
+const Hapi = require('hapi');
+const mongoose = require('mongoose');
+const domain = require('domain');
 const db = require('../');
 
 const assert = require('chai').assert;
 
 describe('Database Service', () => {
 
+	describe('connect', () => {
+
+		beforeEach(() => {
+			mongoose.connection.removeAllListeners();
+			mongoose.connection.close();
+		});
+
+		it('should throw error if unable to reconnect ', (done) => {
+			const server = new Hapi.Server();
+			const testDomain = domain.create();
+
+			testDomain.on('error', (err) => {
+				try {
+					assert.equal(err.message, 'Unable to establish connection with database');
+					done();
+				} catch (e) {
+					done(e);
+				}
+			});
+
+			testDomain.run(() => {
+				db
+					.connect(mongoose, server, {uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1})
+					.then(testDomain.bind(() => {
+						mongoose.connection.close();
+					}));
+			});
+		});
+
+		it('should resolve on connect', () => {
+			const server = new Hapi.Server();
+			return db.connect(mongoose, server, {uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1});
+		});
+
+		it('should reject on connect fail', () => {
+			const server = new Hapi.Server();
+
+			return db
+				.connect(mongoose, server, {uri: 'mongodb://localhost:1233/foobar', dieConnectTimeout: 1})
+				.catch((err) => {
+					assert.match(err.message, /failed to connect to server/);
+				});
+		});
+
+	});
 
 	describe('duplicateKeyError()', () => {
 

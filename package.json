@@ -37,18 +37,19 @@
     }
   },
   "dependencies": {
-    "boom": "^4.0.0",
-    "hoek": "^4.1.0"
+    "boom": "^5.2.0",
+    "hoek": "^4.2.0"
   },
   "devDependencies": {
-    "@aptoma/eslint-config": "^4.0.0",
-    "chai": "3.5.0",
-    "eslint": "^3.6.1",
-    "hapi": "^16.1.0",
+    "@aptoma/eslint-config": "^7.0.1",
+    "bluebird": "^3.5.0",
+    "chai": "^4.1.2",
+    "eslint": "^4.6.1",
+    "hapi": "^16.5.2",
     "istanbul": "^0.4.2",
-    "mocha": "^3.1.0",
+    "mocha": "^3.5.0",
     "mocha-only-detector": "^0.1.0",
-    "mongoose": "^4.8.1",
-    "release-it": "^2.3.1"
+    "mongoose": "^4.11.10",
+    "release-it": "^2.8.5"
   }
 }

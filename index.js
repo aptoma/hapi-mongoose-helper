@@ -124,41 +124,39 @@ function connect(mongoose, server, options) {
 	let dieTimeoutId;
 
 	// fix for running tests when connection isnt closed when watch and reruns tests.
-	if (!mongoose.connection.db) {
-		server.log(['mongoose', 'info'], 'Connecting to database..');
-
-		mongoose.connection.on('connected', () => {
-			clearTimeout(dieTimeoutId);
-			server.log(['mongoose', 'info', 'connected'], 'Connected to database.');
-		});
-
-		mongoose.connection.on('close', () => {
-			server.log(['mongoose', 'info'], 'Disconnected from database.');
-			dieTimeoutId = dieIfNotConnected(options.dieConnectTimeout || 10000);
-		});
-
-		mongoose.connection.on('error', (err) => server.log(['mongoose', 'error'], err));
-
-		const events = ['disconnecting', 'connecting', 'open', 'reconnected'];
-		events.forEach((event) => {
-			mongoose.connection.on(event, () => server.log(['mongoose', 'info', event], `Mongoose connection event: ${event}`));
-		});
-
-		return new Promise((resolve, reject) => {
-			mongoose
-				.connect(options.uri, options.options || {}, (err) => {
-					if (err) {
-						server.log(['mongoose', 'error'], err);
-						return reject(err);
-					}
-
-					resolve();
-				});
-		});
+	if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
+		server.log(['mongoose', 'info'], 'Already connecting/connected..');
+		return Promise.resolve();
 	}
 
-	server.log(['mongoose', 'info'], 'Connection already open..');
-	return Promise.resolve();
+	if (options.dieConnectTimeout) {
+		dieTimeoutId = dieIfNotConnected(options.dieConnectTimeout);
+	}
+
+	mongoose.connection.on('connected', () => {
+		clearTimeout(dieTimeoutId);
+		server.log(['mongoose', 'info', 'connected'], 'Connected to database.');
+	});
+
+	mongoose.connection.on('close', () => {
+		server.log(['mongoose', 'info'], 'Disconnected from database.');
+		if (options.dieConnectTimeout) {
+			dieTimeoutId = dieIfNotConnected(options.dieConnectTimeout);
+		}
+	});
+
+	mongoose.connection.on('error', (err) => server.log(['mongoose', 'error'], err));
+
+	const events = ['disconnecting', 'connecting', 'open', 'reconnected'];
+	events.forEach((event) => {
+		mongoose.connection.on(event, () => server.log(['mongoose', 'info', event], `Mongoose connection event: ${event}`));
+	});
+
+	server.log(['mongoose', 'info'], 'Connecting to database..');
+	return mongoose.connect(options.uri, options.options || {}).catch((err) => {
+		server.log(['mongoose', 'error'], err);
+		throw err;
+	});
 
 	function die() {
 		throw new Error('Unable to establish connection with database');

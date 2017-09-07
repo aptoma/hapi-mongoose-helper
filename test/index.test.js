@@ -4,8 +4,8 @@ const Hapi = require('hapi');
 const mongoose = require('mongoose');
 const domain = require('domain');
 const db = require('../');
-
 const assert = require('chai').assert;
+mongoose.Promise = require('bluebird');
 
 describe('Database Service', () => {
 
@@ -31,7 +31,7 @@ describe('Database Service', () => {
 
 			testDomain.run(() => {
 				db
-					.connect(mongoose, server, {uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1})
+					.connect(mongoose, server, {options: {useMongoClient: true}, uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1})
 					.then(testDomain.bind(() => {
 						mongoose.connection.close();
 					}));
@@ -40,16 +40,17 @@ describe('Database Service', () => {
 
 		it('should resolve on connect', () => {
 			const server = new Hapi.Server();
-			return db.connect(mongoose, server, {uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1});
+			return db.connect(mongoose, server, {options: {useMongoClient: true}, uri: 'mongodb://localhost/foobar'});
 		});
 
-		it('should reject on connect fail', () => {
+		it('should reject on connect fail', (done) => {
 			const server = new Hapi.Server();
 
-			return db
-				.connect(mongoose, server, {uri: 'mongodb://localhost:1233/foobar', dieConnectTimeout: 1})
+			db
+				.connect(mongoose, server, {options: {useMongoClient: true}, uri: 'mongodb://localhost:1233/foobar'})
 				.catch((err) => {
 					assert.match(err.message, /failed to connect to server/);
+					done();
 				});
 		});
 
@@ -81,10 +82,10 @@ describe('Database Service', () => {
 			return new Promise(() => {
 				throw new Error('crap');
 			})
-			.catch(db.validationErrorReply())
-			.catch((e) => {
-				assert.equal(e.message, 'crap');
-			});
+				.catch(db.validationErrorReply())
+				.catch((e) => {
+					assert.equal(e.message, 'crap');
+				});
 		});
 
 		it('should handle ValidationError', () => {
@@ -101,13 +102,13 @@ describe('Database Service', () => {
 				};
 				throw e;
 			})
-			.catch(db.validationErrorReply((err) => {
-				assert.deepEqual(err.output.payload, {
-					statusCode: 400,
-					error: 'Bad Request',
-					message: 'Validation failed: Failed to validate item: should have required property \'title\''
-				});
-			}));
+				.catch(db.validationErrorReply((err) => {
+					assert.deepEqual(err.output.payload, {
+						statusCode: 400,
+						error: 'Bad Request',
+						message: 'Validation failed: Failed to validate item: should have required property \'title\''
+					});
+				}));
 		});
 
 	});

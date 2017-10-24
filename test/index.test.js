@@ -61,28 +61,24 @@ describe('Database Service', () => {
 		it('should match old dup key error message', () => {
 			const err = new Error('E11000 duplicate key error index: dredition-test.editions.$name_1_product_1 dup key: { : "morning-edition", : ObjectId(\'555c3e9843825487310041a7\') }');
 
-			db.duplicateKeyError((err) => {
-				assert.equal(err.message, 'Duplicate key error: name_1_product_1');
-			})(err);
+			assert.throws(db.duplicateKeyError().bind(null, err), 'Duplicate key error: name_1_product_1');
 		});
 
 		it('should match new dup key error message', () => {
 			const err = new Error('E11000 duplicate key error collection: dredition-test.editions index: name_1_product_1 dup key: { : "morning-edition", : ObjectId(\'555c3e9843825487310041a7\') }');
 
-			db.duplicateKeyError((err) => {
-				assert.equal(err.message, 'Duplicate key error: name_1_product_1');
-			})(err);
+			assert.throws(db.duplicateKeyError().bind(null, err), 'Duplicate key error: name_1_product_1');
 		});
 	});
 
 
-	describe('validateErrorReply()', () => {
+	describe('validationError()', () => {
 
 		it('should rethrow error if not an ValidationError', () => {
 			return new Promise(() => {
 				throw new Error('crap');
 			})
-				.catch(db.validationErrorReply())
+				.catch(db.validationError)
 				.catch((e) => {
 					assert.equal(e.message, 'crap');
 				});
@@ -102,13 +98,14 @@ describe('Database Service', () => {
 				};
 				throw e;
 			})
-				.catch(db.validationErrorReply((err) => {
+				.catch(db.validationError)
+				.catch((err) => {
 					assert.deepEqual(err.output.payload, {
 						statusCode: 400,
 						error: 'Bad Request',
 						message: 'Validation failed: Failed to validate item: should have required property \'title\''
 					});
-				}));
+				});
 		});
 
 	});

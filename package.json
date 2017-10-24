@@ -15,7 +15,7 @@
     "release:major": "npm run ci && release-it -n -i major"
   },
   "engines": {
-    "node": ">=4.x.x"
+    "node": ">=8.x.x"
   },
   "repository": {
     "type": "git",
@@ -30,6 +30,9 @@
   "homepage": "https://github.com/aptoma/hapi-mongoose-helper",
   "eslintConfig": {
     "extends": "@aptoma/eslint-config",
+    "parserOptions": {
+      "ecmaVersion": "2017"
+    },
     "env": {
       "node": true,
       "mocha": true,
@@ -37,19 +40,19 @@
     }
   },
   "dependencies": {
-    "boom": "^5.2.0",
-    "hoek": "^4.2.0"
+    "boom": "^7.1.1",
+    "hoek": "^5.0.2"
   },
   "devDependencies": {
     "@aptoma/eslint-config": "^7.0.1",
-    "bluebird": "^3.5.0",
+    "bluebird": "^3.5.1",
     "chai": "^4.1.2",
-    "eslint": "^4.6.1",
-    "hapi": "^16.5.2",
+    "eslint": "^4.12.1",
+    "hapi": "^17.1.1",
     "istanbul": "^0.4.2",
-    "mocha": "^3.5.0",
+    "mocha": "^4.0.1",
     "mocha-only-detector": "^0.1.0",
-    "mongoose": "^4.11.10",
+    "mongoose": "^4.13.6",
     "release-it": "^2.8.5"
   }
 }

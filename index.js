@@ -5,15 +5,14 @@ const Boom = require('boom');
 
 /**
  * Check if the error is a duplicate key error and reply with a sensible error
- * @param  {Function} reply    reply function
  * @throws {Error} If the received error isnt a duplicate key error
  * @return {Function}
  */
-function duplicateKeyError(reply) {
+function duplicateKeyError() {
 	return function (err) {
 		const dup = /^E11000.*index:((.*\$|\s+)?([^\s]+))/.exec(err.message);
 		if (dup) {
-			return reply(Boom.conflict('Duplicate key error: ' + dup[3]));
+			throw Boom.conflict('Duplicate key error: ' + dup[3]);
 		}
 		throw err;
 	};
@@ -21,56 +20,52 @@ function duplicateKeyError(reply) {
 
 /**
  * If the result is empty or NotFoundException reply with NotFound else reply with the result
- * @param  {Function} reply reply function
+ * @param  {Hapi.Toolkit} h
  * @param {Integer} [code] http status code for success
  * @return {Function}
  */
-function notFoundReply(reply, code) {
+function notFoundReply(h, code) {
 	return (result) => {
 		if (!result || result instanceof NotFoundException) {
-			return reply(Boom.notFound());
+			throw Boom.notFound();
 		}
 
-		const r = reply(result);
 		if (code !== undefined) {
-			r.code(code);
+			h.response(result).code(code);
 		}
+
+		return result;
 	};
 }
 
 /**
  * Reply with 400 Bad Request when validation fails
- * @param  {Function} reply reply function
- * @return {Function}
+ * @param {Error} err
  */
-function validationErrorReply(reply) {
-	return function (err) {
-		if (!err.name || err.name !== 'ValidationError') {
-			throw err;
-		}
+function validationError(err) {
+	if (!err.name || err.name !== 'ValidationError') {
+		throw err;
+	}
 
-		const errors = Object.keys(err.errors).map((key) => {
-			return {field: err.errors[key].path, message: err.errors[key].message};
-		});
+	const errors = Object.keys(err.errors).map((key) => {
+		return {field: err.errors[key].path, message: err.errors[key].message};
+	});
 
-		reply(Boom.badRequest('Validation failed: ' + errors[0].message, {_expose: errors}));
-	};
+	throw Boom.badRequest('Validation failed: ' + errors[0].message, {_expose: errors});
 }
 
-function mongoErrorReply(reply) {
-	return function (err) {
-		let message = 'Error saving to database';
-		if (err.message.match(/must not start with/)) {
-			message = err.message;
-			return reply(Boom.badRequest(message));
-		}
+function mongoError(err) {
+	let message = 'Error saving to database';
+	if (err.message.match(/must not start with/)) {
+		message = err.message;
+		throw Boom.badRequest(message);
+	}
 
-		if (err.code === 11000) {
-			return reply(Boom.conflict('Duplicate key'));
-		}
+	if (err.code === 11000) {
+		throw Boom.conflict('Duplicate key');
+	}
 
-		return reply(Boom.internal(message));
-	};
+	throw Boom.internal(message);
 }
 
 /**
@@ -169,8 +164,8 @@ function connect(mongoose, server, options) {
 
 exports.duplicateKeyError = duplicateKeyError;
 exports.notFoundReply = notFoundReply;
-exports.validationErrorReply = validationErrorReply;
-exports.mongoErrorReply = mongoErrorReply;
+exports.validationError = validationError;
+exports.mongoError = mongoError;
 exports.notFoundExceptionIfEmpty = notFoundExceptionIfEmpty;
 exports.NotFoundException = NotFoundException;
 exports.notFoundExceptionIfNoMatch = notFoundExceptionIfNoMatch;

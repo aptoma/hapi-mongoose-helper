@@ -5,15 +5,14 @@ const mongoose = require('mongoose');
 const domain = require('domain');
 const db = require('../');
 const assert = require('chai').assert;
-mongoose.Promise = require('bluebird');
 
 describe('Database Service', () => {
 
 	describe('connect', () => {
 
-		beforeEach(() => {
+		beforeEach((done) => {
 			mongoose.connection.removeAllListeners();
-			mongoose.connection.close();
+			mongoose.connection.close(true, done);
 		});
 
 		it('should throw error if unable to reconnect ', (done) => {
@@ -31,7 +30,7 @@ describe('Database Service', () => {
 
 			testDomain.run(() => {
 				db
-					.connect(mongoose, server, {options: {useMongoClient: true}, uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1})
+					.connect(mongoose, server, {uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1})
 					.then(testDomain.bind(() => {
 						mongoose.connection.close();
 					}));
@@ -40,14 +39,14 @@ describe('Database Service', () => {
 
 		it('should resolve on connect', () => {
 			const server = new Hapi.Server();
-			return db.connect(mongoose, server, {options: {useMongoClient: true}, uri: 'mongodb://localhost/foobar'});
+			return db.connect(mongoose, server, {uri: 'mongodb://localhost/foobar'});
 		});
 
 		it('should reject on connect fail', (done) => {
 			const server = new Hapi.Server();
 
 			db
-				.connect(mongoose, server, {options: {useMongoClient: true}, uri: 'mongodb://localhost:1233/foobar'})
+				.connect(mongoose, server, {options: {reconnectTries: 0}, uri: 'mongodb://localhost:1233/foobar'})
 				.catch((err) => {
 					assert.match(err.message, /failed to connect to server/);
 					done();

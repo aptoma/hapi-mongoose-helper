@@ -1,7 +1,7 @@
 'use strict';
 
-const Hoek = require('hoek');
-const Boom = require('boom');
+const Hoek = require('@hapi/hoek');
+const Boom = require('@hapi/boom');
 
 /**
  * Check if the error is a duplicate key error and reply with a sensible error

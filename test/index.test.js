@@ -1,6 +1,6 @@
 'use strict';
 
-const Hapi = require('hapi');
+const Hapi = require('@hapi/hapi');
 const mongoose = require('mongoose');
 const domain = require('domain');
 const db = require('../');
@@ -30,7 +30,7 @@ describe('Database Service', () => {
 
 			testDomain.run(() => {
 				db
-					.connect(mongoose, server, {uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1})
+					.connect(mongoose, server, {uri: 'mongodb://localhost/foobar', dieConnectTimeout: 1, options: {useNewUrlParser: true}})
 					.then(testDomain.bind(() => {
 						mongoose.connection.close();
 					}));
@@ -39,14 +39,14 @@ describe('Database Service', () => {
 
 		it('should resolve on connect', () => {
 			const server = new Hapi.Server();
-			return db.connect(mongoose, server, {uri: 'mongodb://localhost/foobar'});
+			return db.connect(mongoose, server, {uri: 'mongodb://localhost/foobar', options: {useNewUrlParser: true}});
 		});
 
 		it('should reject on connect fail', (done) => {
 			const server = new Hapi.Server();
 
 			db
-				.connect(mongoose, server, {options: {reconnectTries: 0}, uri: 'mongodb://localhost:1233/foobar'})
+				.connect(mongoose, server, {options: {reconnectTries: 0, useNewUrlParser: true}, uri: 'mongodb://localhost:1233/foobar'})
 				.catch((err) => {
 					assert.match(err.message, /failed to connect to server/);
 					done();

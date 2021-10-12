@@ -78,8 +78,20 @@ function notFoundExceptionIfNoMatch(res) {
 		throw new NotFoundException('Empty database result');
 	}
 
-	// support both update result and remove result
-	const n = res.n !== undefined ? res.n : Hoek.reach(res, 'result.n');
+	// support mixed types of results
+	let n;
+
+	if (res.n !== undefined) {
+		n = res.n;
+	}
+
+	if (res.result?.n !== undefined) {
+		n = res.result.n;
+	}
+
+	if (res.matchedCount !== undefined) {
+		n = res.matchedCount;
+	}
 
 	// n is the number of matched document
 	// more info on response here https://docs.mongodb.org/manual/reference/command/update/#update-command-output

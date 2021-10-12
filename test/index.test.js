@@ -55,6 +55,23 @@ describe('Database Service', () => {
 
 	});
 
+	describe('notFoundExceptionIfNoMatch', () => {
+		it('supports res.n', () => {
+			db.notFoundExceptionIfNoMatch({n: 1});
+			assert.throws(() => db.notFoundExceptionIfNoMatch({n: 0}), 'No document matched for update');
+		});
+
+		it('supports res.result.n', () => {
+			db.notFoundExceptionIfNoMatch({result: {n: 1}});
+			assert.throws(() => db.notFoundExceptionIfNoMatch({result: {n: 0}}), 'No document matched for update');
+		});
+
+		it('supports res.matchedCount', () => {
+			db.notFoundExceptionIfNoMatch({matchedCount: 1});
+			assert.throws(() => db.notFoundExceptionIfNoMatch({matchedCount: 0}), 'No document matched for update');
+		});
+	});
+
 	describe('duplicateKeyError()', () => {
 
 		it('should match old dup key error message', () => {

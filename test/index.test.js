@@ -46,9 +46,9 @@ describe('Database Service', () => {
 			const server = new Hapi.Server();
 
 			db
-				.connect(mongoose, server, {options: {reconnectTries: 0, useNewUrlParser: true}, uri: 'mongodb://localhost:1233/foobar'})
+				.connect(mongoose, server, {options: {useNewUrlParser: true, serverSelectionTimeoutMS: 10, connectTimeoutMS: 10}, uri: 'mongodb://localhost:1233/foobar'})
 				.catch((err) => {
-					assert.match(err.message, /failed to connect to server/);
+					assert.match(err.message, /connect ECONNREFUSED/);
 					done();
 				});
 		});

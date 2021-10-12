@@ -1,6 +1,6 @@
 {
   "name": "@aptoma/hapi-mongoose-helper",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   "eslintConfig": {
     "extends": "@aptoma/eslint-config",
     "parserOptions": {
-      "ecmaVersion": "2017"
+      "ecmaVersion": "2021"
     },
     "env": {
       "node": true,

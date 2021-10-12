@@ -1,6 +1,10 @@
 ### Changelog
 
-#### [5.0.0](https://github.com/aptoma/hapi-mongoose-helper/compare/4.0.0...5.0.0) 2021-10-12
+#### [5.0.1](https://github.com/aptoma/hapi-mongoose-helper/compare/5.0.0...5.0.1) 2021-10-12
+
+- Support more result types in notFoundExceptionIfNoMatch [`8cc1a17`](https://github.com/aptoma/hapi-mongoose-helper/commit/8cc1a171b6c6a39ba12370deca83ec45b6a8f339)
+
+### [5.0.0](https://github.com/aptoma/hapi-mongoose-helper/compare/4.0.0...5.0.0) 2021-10-12
 
 - Update dependencies.  [`8b87a0f`](https://github.com/aptoma/hapi-mongoose-helper/commit/8b87a0fe1c99e26b4dc017ebeb44ff8f6412fbb8)
 
